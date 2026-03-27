@@ -4,33 +4,141 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import React, { useContext, useEffect, useState, useRef } from "react";
 import Webcam from "react-webcam";
-import { Mic } from "lucide-react";
+import { Mic, Play, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import { chatSession } from "@/utils/GeminiAIModal";
+import * as tf from "@tensorflow/tfjs";
+import * as blazeface from "@tensorflow-models/blazeface";
+// Server-side Gemini endpoints will handle AI calls and DB writes
 import { db } from "@/utils/db";
 import { UserAnswer } from "@/utils/schema";
 import { useUser } from "@clerk/nextjs";
 import moment from "moment";
 import { WebCamContext } from "@/app/dashboard/layout";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
+import { useRouter } from "next/navigation";
 const RecordAnswerSection = ({
   mockInterviewQuestion,
   activeQuestionIndex,
   interviewData,
+  onAnswerSaved,
 }) => {
   const [userAnswer, setUserAnswer] = useState("");
+  const [answeredQuestions, setAnsweredQuestions] = useState({});
   const { user } = useUser();
   const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const { webCamEnabled, setWebCamEnabled } = useContext(WebCamContext);
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
+  const [recordingPath, setRecordingPath] = useState("");
+  const [showRecordingReview, setShowRecordingReview] = useState(false);
+  const audioRef = useRef(null);
 
-  const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
+  const router = useRouter();
+  const warningCountRef = useRef(0);
+
+  const handleWarning = (msg) => {
+    warningCountRef.current += 1;
+    if (warningCountRef.current >= 5) {
+      toast.error("Interview Ended: Don't repeat the malpractice again", {
+        style: { padding: "24px", fontSize: "20px", fontWeight: "bold" },
+      });
+      router.replace("/dashboard");
+    } else {
+      toast.error(`${msg} (Warning ${warningCountRef.current}/5)`, {
+        style: { padding: "20px", fontSize: "18px" },
+      });
+    }
+  };
+
+  // Face detection specific hooks
+  const webcamRef = useRef(null);
+  const [faceModel, setFaceModel] = useState(null);
+  const faceDetectionIntervalRef = useRef(null);
 
   useEffect(() => {
+    const loadFaceModel = async () => {
+      try {
+        await tf.ready();
+        const model = await blazeface.load();
+        setFaceModel(model);
+        console.log("Blazeface model loaded");
+      } catch (error) {
+        console.error("Error loading face detection model:", error);
+      }
+    };
+    loadFaceModel();
+  }, []);
+
+  useEffect(() => {
+    if (webCamEnabled && faceModel) {
+      faceDetectionIntervalRef.current = setInterval(async () => {
+        if (webcamRef.current && webcamRef.current.video && webcamRef.current.video.readyState === 4) {
+          const video = webcamRef.current.video;
+          try {
+            const predictions = await faceModel.estimateFaces(video, false);
+            if (predictions.length === 0) {
+              handleWarning("Face not detected. Please stay in the frame.");
+            } else if (predictions.length > 1) {
+              handleWarning("Multiple faces detected. Please ensure you are alone.");
+            }
+          } catch (err) {
+            console.error("Face detection error:", err);
+          }
+        }
+      }, 3000);
+    } else {
+      if (faceDetectionIntervalRef.current) {
+        clearInterval(faceDetectionIntervalRef.current);
+      }
+    }
+
+    return () => {
+      if (faceDetectionIntervalRef.current) {
+        clearInterval(faceDetectionIntervalRef.current);
+      }
+    };
+  }, [webCamEnabled, faceModel]);
+
+  // Tab switching and focus loss detection
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        handleWarning("Tab switch or minimization detected. Please do not switch tabs during the interview.");
+      }
+    };
+
+    const handleBlur = () => {
+      handleWarning("Window lost focus. Please keep the interview window active.");
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleBlur);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, []);
+
+  // Save answer when moving to a different question
+  useEffect(() => {
+    if (activeQuestionIndex in answeredQuestions && !userAnswer) {
+      // Load previously saved answer for this question
+      setUserAnswer(answeredQuestions[activeQuestionIndex]);
+    } else if (!(activeQuestionIndex in answeredQuestions)) {
+      // Clear input for new question
+      setUserAnswer("");
+    }
+  }, [activeQuestionIndex, answeredQuestions]);
+
+  // Auto-save answer when enough text is entered
+  useEffect(() => {
     if (!isRecording && userAnswer.length > 10) {
+      // Mark this question as answered
+      setAnsweredQuestions((prev) => ({
+        ...prev,
+        [activeQuestionIndex]: userAnswer,
+      }));
       updateUserAnswer();
     }
   }, [userAnswer]);
@@ -70,22 +178,42 @@ const RecordAnswerSection = ({
   const transcribeAudio = async (audioBlob) => {
     try {
       setLoading(true);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-      
-      // Convert audio blob to base64
+      // Convert audio blob to base64 and send to server for transcription + saving
       const reader = new FileReader();
       reader.readAsDataURL(audioBlob);
       reader.onloadend = async () => {
-        const base64Audio = reader.result.split(',')[1];
-        
-        const result = await model.generateContent([
-          "Transcribe the following audio:",
-          { inlineData: { data: base64Audio, mimeType: "audio/webm" } },
-        ]);
+        try {
+          const base64Audio = reader.result.split(",")[1];
 
-        const transcription = result.response.text();
-        setUserAnswer((prevAnswer) => prevAnswer + " " + transcription);
-        setLoading(false);
+          const res = await fetch("/api/transcribe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              base64Audio,
+              interviewId: interviewData?.mockId,
+              userEmail: user?.primaryEmailAddress?.emailAddress,
+            }),
+          });
+
+          if (!res.ok) {
+            const err = await res.text();
+            throw new Error(err || "Transcription failed");
+          }
+
+          const json = await res.json();
+          console.log("Transcription response:", json);
+          setUserAnswer((prev) => prev + " " + (json.transcription || ""));
+          if (json.filePath) {
+            console.log("Setting recordingPath to:", json.filePath);
+            setRecordingPath(json.filePath);
+            toast("Recording saved successfully!");
+          }
+        } catch (e) {
+          console.error("Transcription error:", e);
+          toast("Error transcribing audio. Please try again.");
+        } finally {
+          setLoading(false);
+        }
       };
     } catch (error) {
       console.error("Error transcribing audio:", error);
@@ -97,49 +225,48 @@ const RecordAnswerSection = ({
   const updateUserAnswer = async () => {
     try {
       setLoading(true);
-      const feedbackPrompt =
-        "Question:" +
-        mockInterviewQuestion[activeQuestionIndex]?.Question +
-        ", User Answer:" +
-        userAnswer +
-        " , Depends on question and user answer for given interview question" +
-        " please give us rating for answer and feedback as area of improvement if any " +
-        "in just 3 to 5 lines to improve it in JSON format with rating field and feedback field";
 
-      const result = await chatSession.sendMessage(feedbackPrompt);
+      const currentQuestion = mockInterviewQuestion[activeQuestionIndex];
 
-      let MockJsonResp = result.response.text();
-      console.log(MockJsonResp);
-
-      // Removing possible extra text around JSON
-      MockJsonResp = MockJsonResp.replace("```json", "").replace("```", "");
-
-      // Attempt to parse JSON
-      let jsonFeedbackResp;
-      try {
-        jsonFeedbackResp = JSON.parse(MockJsonResp);
-      } catch (e) {
-        throw new Error("Invalid JSON response: " + MockJsonResp);
-      }
-
-      const resp = await db.insert(UserAnswer).values({
-        mockIdRef: interviewData?.mockId,
-        question: mockInterviewQuestion[activeQuestionIndex]?.Question,
-        correctAns: mockInterviewQuestion[activeQuestionIndex]?.Answer,
-        userAns: userAnswer,
-        feedback: jsonFeedbackResp?.feedback,
-        rating: jsonFeedbackResp?.rating,
-        userEmail: user?.primaryEmailAddress?.emailAddress,
-        createdAt: moment().format("YYYY-MM-DD"),
+      console.log("Saving answer for Question #" + (activeQuestionIndex + 1), {
+        question: currentQuestion?.Question?.substring(0, 50) + "...",
+        answer: userAnswer?.substring(0, 50) + "...",
+        interviewId: interviewData?.mockId,
       });
 
-      if (resp) {
-        toast("User Answer recorded successfully");
+      // Send transcription + question to server; server will call the Gemini model
+      const res = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: currentQuestion?.Question,
+          correctAns: currentQuestion?.Answer,
+          userAnswer,
+          interviewData,
+          userEmail: user?.primaryEmailAddress?.emailAddress,
+        }),
+      });
+
+      if (!res.ok) {
+        const txt = await res.text();
+        console.error("Feedback API error:", txt);
+        throw new Error(txt || "Failed to get feedback");
       }
-      setUserAnswer("");
+
+      const json = await res.json();
+      console.log("Answer saved successfully for Question #" + (activeQuestionIndex + 1));
+
+      if (json.success) {
+        toast("Answer recorded successfully!");
+        if (json.nextQuestion && onAnswerSaved) {
+          onAnswerSaved(json.nextQuestion);
+        }
+      }
+
+      // Don't clear the answer immediately - let user review before moving to next
       setLoading(false);
     } catch (error) {
-      console.error(error);
+      console.error("Error saving answer:", error);
       toast("An error occurred while recording the user answer");
       setLoading(false);
     }
@@ -151,6 +278,7 @@ const RecordAnswerSection = ({
         {webCamEnabled ? (
           <Webcam
             mirrored={true}
+            ref={webcamRef}
             style={{ height: 250, width: "100%", zIndex: 10 }}
           />
         ) : (
@@ -176,7 +304,44 @@ const RecordAnswerSection = ({
             " Record Answer"
           )}
         </Button>
+        {recordingPath && (
+          <Button
+            variant="secondary"
+            onClick={() => setShowRecordingReview(!showRecordingReview)}
+          >
+            <Play className="mr-2 w-4 h-4" /> Review Recording
+          </Button>
+        )}
       </div>
+
+      {showRecordingReview && recordingPath && (
+        <div className="mt-6 p-4 bg-gray-900 rounded-lg w-[30rem] border border-gray-700">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-white font-semibold">Your Recording</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                if (audioRef.current) {
+                  audioRef.current.currentTime = 0;
+                }
+              }}
+              title="Restart playback"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </Button>
+          </div>
+          <audio
+            ref={audioRef}
+            src={recordingPath}
+            controls
+            className="w-full rounded bg-gray-800 focus:outline-none"
+          />
+          <p className="text-xs text-gray-400 mt-2">
+            Review your answer before proceeding to the next question
+          </p>
+        </div>
+      )}
       {/* Check transcription code */}
       {/* {userAnswer && (
         <div className="mt-4 p-4 bg-gray-100 rounded-lg">

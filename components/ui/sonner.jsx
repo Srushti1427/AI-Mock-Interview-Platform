@@ -10,6 +10,8 @@ const Toaster = ({
   return (
     (<Sonner
       theme={theme}
+      richColors={true}
+      position="top-center"
       className="toaster group"
       toastOptions={{
         classNames: {

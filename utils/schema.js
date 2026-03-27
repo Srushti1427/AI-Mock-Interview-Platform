@@ -45,4 +45,14 @@ export const Newsletter = pgTable('newsletter',{
     newEmail: varchar('newEmail'),
     newMessage: text('newMessage'),
     createdAt: varchar('createdAt')
-})
+});
+
+export const AptitudeTest = pgTable('aptitudeTest', {
+    id: serial('id').primaryKey(),
+    jsonMockResp: text('jsonMockResp').notNull(),
+    topic: varchar('topic').notNull(),
+    difficulty: varchar('difficulty').notNull(),
+    createdBy: varchar('createdBy').notNull(),
+    createdAt: varchar('createdAt'),
+    mockId: varchar('mockId').notNull()
+});

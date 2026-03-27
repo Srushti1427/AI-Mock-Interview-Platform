@@ -61,16 +61,19 @@ const AddQuestions = () => {
     console.log("InputPrompt:", InputPrompt);
 
     try {
-      const result = await chatSession.sendMessage(InputPrompt);
-      const MockQuestionJsonResp = result.response
-        .text()
-        .replace("```json", "")
-        .replace("```", "")
-        .trim();
-      // console.log("Parsed data", JSON.parse(MockQuestionJsonResp));
-      
-      console.log("JSON RESPONSE", MockQuestionJsonResp);
-      // console.log("Parsed RESPONSE", JSON.parse(MockQuestionJsonResp))
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "generateQuestions", jobPosition, jobDesc, jobExperience, typeQuestion, company }),
+      });
+
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || "AI generation failed");
+      }
+
+      const { rawText } = await res.json();
+      const MockQuestionJsonResp = rawText;
 
       if (MockQuestionJsonResp) {
         const resp = await db
@@ -87,8 +90,6 @@ const AddQuestions = () => {
             createdAt: moment().format("YYYY-MM-DD"),
           })
           .returning({ mockId: Question.mockId });
-
-        console.log("Inserted ID:", resp);
 
         if (resp) {
           setOpenDialog(false);
@@ -111,7 +112,7 @@ const AddQuestions = () => {
         className="p-10 rounded-lg border bg-secondary hover:scale-105 hover:shadow-sm transition-all cursor-pointer"
         onClick={() => setOpenDialog(true)}
       >
-        <h2 className=" text-lg text-center">+ Add New Questions</h2>
+        <h2 className="text-lg text-center text-secondary-foreground font-semibold">+ Add New Questions</h2>
       </div>
 
       <Dialog open={openDailog}>

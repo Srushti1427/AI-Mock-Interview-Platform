@@ -8,9 +8,9 @@ export const WebCamContext = createContext();
 const DashboardLayout = ({ children }) => {
   const [webCamEnabled, setWebCamEnabled] = useState(false);
   return (
-    <div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
         <Header logo={logo} />
-        <div className="mx-5 md:mx-20 lg:mx-36">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8">
           <WebCamContext.Provider value={{ webCamEnabled, setWebCamEnabled }}>
             {children}
           </WebCamContext.Provider>

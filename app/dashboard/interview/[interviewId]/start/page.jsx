@@ -13,20 +13,53 @@ const StartInterview = ({ params }) => {
   const [interviewData, setInterviewData] = useState();
   const [mockInterviewQuestion, setMockInterviewQuestion] = useState();
   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
+  const recordAnswerSectionRef = React.useRef(null);
+
   useEffect(() => {
     GetInterviewDetails();
   }, []);
 
   const GetInterviewDetails = async () => {
-    const result = await db
-      .select()
-      .from(MockInterview)
-      .where(eq(MockInterview.mockId, params.interviewId));
+    try {
+      const result = await db
+        .select()
+        .from(MockInterview)
+        .where(eq(MockInterview.mockId, params.interviewId));
 
-    const jsonMockResp = JSON.parse(result[0].jsonMockResp);
-    console.log(jsonMockResp);
-    setMockInterviewQuestion(jsonMockResp);
-    setInterviewData(result[0]);
+      console.log("Raw DB Result:", result[0]);
+
+      if (!result || result.length === 0) {
+        console.error("No interview found");
+        return;
+      }
+
+      const jsonMockResp = JSON.parse(result[0].jsonMockResp);
+      console.log("Parsed Questions:", jsonMockResp);
+      console.log("First Question:", jsonMockResp[0]);
+      console.log("Total Questions:", jsonMockResp.length);
+
+      if (!Array.isArray(jsonMockResp)) {
+        console.error("jsonMockResp is not an array:", jsonMockResp);
+        return;
+      }
+
+      setMockInterviewQuestion(jsonMockResp);
+      setInterviewData(result[0]);
+    } catch (error) {
+      console.error("Error loading interview:", error);
+    }
+  };
+
+  const handleNextQuestion = () => {
+    if (activeQuestionIndex < mockInterviewQuestion?.length - 1) {
+      setActiveQuestionIndex(activeQuestionIndex + 1);
+    }
+  };
+
+  const handlePreviousQuestion = () => {
+    if (activeQuestionIndex > 0) {
+      setActiveQuestionIndex(activeQuestionIndex - 1);
+    }
   };
 
   return (
@@ -43,24 +76,29 @@ const StartInterview = ({ params }) => {
           mockInterviewQuestion={mockInterviewQuestion}
           activeQuestionIndex={activeQuestionIndex}
           interviewData={interviewData}
+          onAnswerSaved={(nextQuestion) => {
+            if (nextQuestion && mockInterviewQuestion.length < 5) {
+              setMockInterviewQuestion(prev => [...prev, nextQuestion]);
+            }
+          }}
         />
       </div>
       <div className="flex gap-3 my-5 md:my-0 md:justify-end md:gap-6">
         {activeQuestionIndex > 0 && (
           <Button
-            onClick={() => setActiveQuestionIndex(activeQuestionIndex - 1)}
+            onClick={handlePreviousQuestion}
           >
             Previous Question
           </Button>
         )}
         {activeQuestionIndex != mockInterviewQuestion?.length - 1 && (
           <Button
-            onClick={() => setActiveQuestionIndex(activeQuestionIndex + 1)}
+            onClick={handleNextQuestion}
           >
             Next Question
           </Button>
         )}
-        {activeQuestionIndex == mockInterviewQuestion?.length - 1 && (
+        {activeQuestionIndex == mockInterviewQuestion?.length - 1 && mockInterviewQuestion?.length === 5 && (
           <Link
             href={"/dashboard/interview/" + interviewData?.mockId + "/feedback"}
           >

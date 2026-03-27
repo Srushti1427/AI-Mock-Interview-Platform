@@ -15,7 +15,7 @@ export default async function Page() {
     <section className="bg-white dark:bg-gray-900 min-h-screen">
       <div className="lg:grid lg:min-h-screen lg:grid-cols-12">
         {/* Left Side - Hero Section */}
-        <section className="relative flex h-32 items-end bg-blue-600 lg:col-span-5 lg:h-full xl:col-span-6">
+        <section className="relative flex h-32 items-end bg-strawberry lg:col-span-5 lg:h-full xl:col-span-6">
           {/* Background Image */}
           <div className="absolute inset-0">
             <img
@@ -23,7 +23,7 @@ export default async function Page() {
               src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2076&q=80"
               className="h-full w-full object-cover opacity-20"
             />
-            <div className="absolute inset-0 bg-blue-600/80"></div>
+            <div className="absolute inset-0 bg-strawberry/80"></div>
           </div>
 
           {/* Content */}
