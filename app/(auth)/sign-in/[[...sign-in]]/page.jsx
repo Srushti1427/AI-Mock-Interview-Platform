@@ -147,7 +147,7 @@ export default async function Page() {
                 Welcome to AI MOCK INTERVIEW
               </h1>
 
-              <p className="mt-4 text-gray-600 dark:text-gray-400 max-w-sm mx-auto">
+              <p className="mt-4 text-gray-600 dark:text-gray-200 max-w-sm mx-auto">
                 Sign in to start practicing with our AI interviewers and improve
                 your skills.
               </p>
@@ -163,7 +163,7 @@ export default async function Page() {
 
               {/* Additional Info */}
               <div className="mt-6 text-center">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-gray-500 dark:text-gray-200">
                   New to AI MOCK INTERVIEW?{" "}
                   <a
                     href="/sign-up"

@@ -1,6 +1,4 @@
 "use client";
-import { db } from "@/utils/db";
-import { Newsletter } from "@/utils/schema";
 import { LoaderCircle } from "lucide-react";
 import moment from "moment";
 import React, { useState } from "react";
@@ -20,24 +18,19 @@ const Contect = () => {
 
     console.log(name, email, message);
 
-    if (name && email && message) {
+      if (name && email && message) {
       setLoading(true);
       try {
-        const resp = await db.insert(Newsletter).values({
-          newName: name,
-          newEmail: email,
-          newMessage: message,
-          createdAt: moment().format("YYYY-MM-DD"),
-        });
-
-        if (resp) {
-          toast("User Response recorded successfully");
-          setName("");
-          setEmail("");
-          setMessage("");
-        } else {
-          toast("Error recording response");
-        }
+          const res = await fetch('/api/newsletter/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ newName: name, newEmail: email, newMessage: message, createdAt: moment().format('YYYY-MM-DD') }),
+          });
+          if (!res.ok) throw new Error(await res.text());
+          toast('User Response recorded successfully');
+          setName('');
+          setEmail('');
+          setMessage('');
       } catch (error) {
         console.error(error);
         toast("Error recording response");
@@ -49,41 +42,41 @@ const Contect = () => {
     }
   };
   return (
-    <div className="container mx-auto text-center">
-      <h2 className="text-4xl font-bold text-gray-800">Get In Touch</h2>
-      <p className="mt-4 text-lg text-gray-600">
+    <div className="container mx-auto text-center px-4 sm:px-6">
+      <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-800 dark:text-white">Get In Touch</h2>
+      <p className="mt-3 sm:mt-4 text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
         Have any questions? Reach out to us and we'll get back to you as soon as
         possible.
       </p>
-      <div className="mt-8">
-        <form onSubmit={onSubmit} className="max-w-xl mx-auto">
+      <div className="mt-6 sm:mt-8">
+        <form onSubmit={onSubmit} className="max-w-xl mx-auto space-y-3 sm:space-y-4">
           <input
             type="text"
             placeholder="Your Name"
             value={name}
             onChange={handleInputChange(setName)}
-            className="w-full px-4 py-3 mb-4 text-lg border border-gray-300 rounded-lg"
+            className="w-full px-4 py-3 sm:py-4 text-base sm:text-lg border border-gray-300 dark:border-gray-600 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-salmon focus:ring-2 focus:ring-salmon/30 smooth-transition"
           />
           <input
             type="email"
             placeholder="Your Email"
             value={email}
             onChange={handleInputChange(setEmail)}
-            className="w-full px-4 py-3 mb-4 text-lg border border-gray-300 rounded-lg"
+            className="w-full px-4 py-3 sm:py-4 text-base sm:text-lg border border-gray-300 dark:border-gray-600 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-salmon focus:ring-2 focus:ring-salmon/30 smooth-transition"
           />
           <textarea
             placeholder="Your Message"
             value={message}
             onChange={handleInputChange(setMessage)}
-            className="w-full px-4 py-3 mb-4 text-lg border border-gray-300 rounded-lg"
+            className="w-full px-4 py-3 sm:py-4 text-base sm:text-lg border border-gray-300 dark:border-gray-600 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-salmon focus:ring-2 focus:ring-salmon/30 smooth-transition"
             rows="4"
           />
           <button
             type="submit"
-            className="px-6 py-3 text-lg font-semibold bg-black text-white rounded-lg shadow-lg hover:bg-gray-700"
+            className="w-full sm:w-auto px-8 sm:px-10 py-3 sm:py-4 text-base sm:text-lg font-semibold bg-gradient-to-r from-strawberry to-salmon hover:from-strawberry-dark hover:to-salmon-dark text-white rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl smooth-transition transform hover:scale-105"
           >
             {loading ? (
-              <LoaderCircle className="animate-spin" />
+              <LoaderCircle className="animate-spin mx-auto" />
             ) : (
               "Send Message"
             )}

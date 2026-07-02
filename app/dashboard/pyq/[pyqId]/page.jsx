@@ -6,9 +6,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { db } from "@/utils/db";
-import { Question } from "@/utils/schema";
-import { eq } from "drizzle-orm";
 import { Volume2 } from "lucide-react";
 import { textToSpeech } from "@/utils/textToSpeech";
 
@@ -21,12 +18,18 @@ const page = ({ params }) => {
   }, []);
 
   const getQuestionDetails = async () => {
-    const result = await db
-      .select()
-      .from(Question)
-      .where(eq(Question.mockId, params.pyqId));
-    const questionData = JSON.parse(result[0].MockQuestionJsonResp);
-    setQuestionData(questionData);
+    try {
+      const res = await fetch(`/api/questions/${params.pyqId}`);
+      if (!res.ok) {
+        console.error('Failed to fetch pyq details', await res.text());
+        return;
+      }
+      const record = await res.json();
+      const questionData = JSON.parse(record.MockQuestionJsonResp || '[]');
+      setQuestionData(questionData);
+    } catch (err) {
+      console.error(err);
+    }
     // console.log("data", questionData);
   };
 

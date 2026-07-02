@@ -1,7 +1,4 @@
 "use client";
-import { db } from "@/utils/db";
-import { UserAnswer } from "@/utils/schema";
-import { eq } from "drizzle-orm";
 import React, { useEffect, useState } from "react";
 import { ChevronDown, Loader2 } from "lucide-react";
 
@@ -26,12 +23,13 @@ const Feedback = ({ params }) => {
 
   const GetFeedback = async () => {
     try {
-      const result = await db
-        .select()
-        .from(UserAnswer)
-        .where(eq(UserAnswer.mockIdRef, params.interviewId))
-        .orderBy(UserAnswer.id);
-
+      const res = await fetch(`/api/user-answers/${params.interviewId}`);
+      if (!res.ok) {
+        console.error('Failed to fetch user answers', await res.text());
+        setLoadingFeedback(false);
+        return;
+      }
+      const result = await res.json();
       console.log(result);
       setFeedbackList(result);
 
@@ -93,7 +91,7 @@ const Feedback = ({ params }) => {
           <h2 className="font-bold text-2xl mb-6">Here is your interview feedback</h2>
           
           {/* Overall Rating */}
-          <h2 className="text-primary text-lg my-3">
+          <h2 className="text-primary dark:text-blue-300 text-lg my-3">
             Your overall interview rating{" "}
             <strong
               className={`${
@@ -101,7 +99,7 @@ const Feedback = ({ params }) => {
               }`}
             >
               {overallRating}
-              <span className="text-black">/10</span>
+              <span className="text-black dark:text-white">/10</span>
             </strong>
           </h2>
 
@@ -114,22 +112,22 @@ const Feedback = ({ params }) => {
               </div>
             </div>
           ) : overallFeedback ? (
-            <div className="my-8 bg-gradient-to-r from-blue-50 to-orange-50 border-2 border-peach rounded-lg p-6">
-              <h2 className="text-2xl font-bold text-strawberry mb-4">AI Coach Assessment & Improvement Plan</h2>
+            <div className="my-8 bg-gradient-to-r from-blue-50 to-orange-50 dark:from-slate-800 dark:to-slate-800 border-2 border-peach dark:border-slate-700 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-strawberry dark:text-white mb-4">AI Coach Assessment & Improvement Plan</h2>
               
               {/* Overall Analysis */}
-              <div className="mb-6 p-4 bg-white rounded-lg border-l-4 border-blue-900">
-                <h3 className="font-bold text-strawberry mb-2 text-lg">📊 Performance Analysis</h3>
-                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{overallFeedback.overallAnalysis}</p>
+              <div className="mb-6 p-4 bg-white dark:bg-slate-900 rounded-lg border-l-4 border-blue-900 dark:border-blue-500">
+                <h3 className="font-bold text-strawberry dark:text-blue-300 mb-2 text-lg">📊 Performance Analysis</h3>
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{overallFeedback.overallAnalysis}</p>
               </div>
 
               {/* Key Mistakes */}
               {overallFeedback.keyMistakes && overallFeedback.keyMistakes.length > 0 && (
-                <div className="mb-6 p-4 bg-red-50 rounded-lg border-l-4 border-orange-600">
-                  <h3 className="font-bold text-orange-800 mb-3 text-lg">❌ Key Mistakes to Avoid</h3>
+                <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 rounded-lg border-l-4 border-orange-600 dark:border-red-500">
+                  <h3 className="font-bold text-orange-800 dark:text-red-400 mb-3 text-lg">❌ Key Mistakes to Avoid</h3>
                   <ul className="space-y-2">
                     {overallFeedback.keyMistakes.map((mistake, idx) => (
-                      <li key={idx} className="text-orange-700 flex gap-2">
+                      <li key={idx} className="text-orange-700 dark:text-red-200 flex gap-2">
                         <span className="font-bold">•</span>
                         <span>{mistake}</span>
                       </li>
@@ -140,11 +138,11 @@ const Feedback = ({ params }) => {
 
               {/* Improvements */}
               {overallFeedback.improvements && overallFeedback.improvements.length > 0 && (
-                <div className="mb-6 p-4 bg-green-50 rounded-lg border-l-4 border-blue-900">
-                  <h3 className="font-bold text-strawberry mb-3 text-lg">✅ Areas to Improve</h3>
+                <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/30 rounded-lg border-l-4 border-blue-900 dark:border-green-500">
+                  <h3 className="font-bold text-strawberry dark:text-green-400 mb-3 text-lg">✅ Areas to Improve</h3>
                   <ul className="space-y-2">
                     {overallFeedback.improvements.map((improvement, idx) => (
-                      <li key={idx} className="text-blue-700 flex gap-2">
+                      <li key={idx} className="text-blue-700 dark:text-green-200 flex gap-2">
                         <span className="font-bold">•</span>
                         <span>{improvement}</span>
                       </li>
@@ -155,11 +153,11 @@ const Feedback = ({ params }) => {
 
               {/* Action Items */}
               {overallFeedback.actionItems && overallFeedback.actionItems.length > 0 && (
-                <div className="p-4 bg-yellow-50 rounded-lg border-l-4 border-orange-600">
-                  <h3 className="font-bold text-orange-800 mb-3 text-lg">🎯 Action Items for Your Next Interview</h3>
+                <div className="p-4 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg border-l-4 border-orange-600 dark:border-yellow-500">
+                  <h3 className="font-bold text-orange-800 dark:text-yellow-400 mb-3 text-lg">🎯 Action Items for Your Next Interview</h3>
                   <ol className="space-y-2">
                     {overallFeedback.actionItems.map((item, idx) => (
-                      <li key={idx} className="text-orange-700 flex gap-2">
+                      <li key={idx} className="text-orange-700 dark:text-yellow-200 flex gap-2">
                         <span className="font-bold">{idx + 1}.</span>
                         <span>{item}</span>
                       </li>
@@ -170,40 +168,40 @@ const Feedback = ({ params }) => {
             </div>
           ) : null}
 
-          <h2 className="text-lg font-bold text-gray-800 mt-10 mb-4">
+          <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mt-10 mb-4">
             📋 Question-by-Question Breakdown
           </h2>
-          <h2 className="text-sm text-gray-600 mb-5">
+          <h2 className="text-sm text-gray-600 dark:text-gray-300 mb-5">
             Find below interview questions with correct answers, your answers and detailed feedback for improvement
           </h2>
           
           {feedbackList &&
             feedbackList.map((item, index) => (
               <Collapsible key={index} className="mt-4">
-                <CollapsibleTrigger className="p-4 bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-300 rounded-lg my-2 text-left flex justify-between gap-7 w-full hover:from-orange-100 hover:to-yellow-100 transition font-semibold text-gray-800">
+                <CollapsibleTrigger className="p-4 bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-slate-800 dark:to-slate-800 border-2 border-orange-300 dark:border-slate-700 rounded-lg my-2 text-left flex justify-between gap-7 w-full hover:from-orange-100 hover:to-yellow-100 dark:hover:from-slate-700 dark:hover:to-slate-700 transition font-semibold text-gray-900 dark:text-white">
                   <span>Q{index + 1}: {item.question}</span>
                   <ChevronDown className="h-5 w-5 flex-shrink-0" />
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <div className="flex flex-col gap-3 mt-3 bg-white p-4 rounded-lg border border-gray-200">
-                    <div className="p-4 border-l-4 border-salmon bg-orange-50 rounded">
-                      <h3 className="font-bold text-orange-900 mb-2">Rating:</h3>
-                      <p className="text-2xl font-bold text-salmon-dark">{item.rating}/10</p>
+                  <div className="flex flex-col gap-3 mt-3 bg-white dark:bg-slate-900 p-4 rounded-lg border border-gray-200 dark:border-slate-700">
+                    <div className="p-4 border-l-4 border-salmon bg-orange-50 dark:bg-slate-800 rounded">
+                      <h3 className="font-bold text-orange-900 dark:text-orange-400 mb-2">Rating:</h3>
+                      <p className="text-2xl font-bold text-salmon-dark dark:text-salmon">{item.rating}/10</p>
                     </div>
                     
-                    <div className="p-4 border-l-4 border-red-500 bg-red-50 rounded">
-                      <h3 className="font-bold text-red-900 mb-2">Your Answer:</h3>
-                      <p className="text-gray-800 whitespace-pre-wrap">{item.userAns}</p>
+                    <div className="p-4 border-l-4 border-red-500 bg-red-50 dark:bg-slate-800 rounded">
+                      <h3 className="font-bold text-red-900 dark:text-red-400 mb-2">Your Answer:</h3>
+                      <p className="text-gray-900 dark:text-gray-200 whitespace-pre-wrap">{item.userAns}</p>
                     </div>
                     
-                    <div className="p-4 border-l-4 border-green-500 bg-green-50 rounded">
-                      <h3 className="font-bold text-green-900 mb-2">Correct Answer:</h3>
-                      <p className="text-gray-800 whitespace-pre-wrap">{item.correctAns}</p>
+                    <div className="p-4 border-l-4 border-green-500 bg-green-50 dark:bg-slate-800 rounded">
+                      <h3 className="font-bold text-green-900 dark:text-green-400 mb-2">Correct Answer:</h3>
+                      <p className="text-gray-900 dark:text-gray-200 whitespace-pre-wrap">{item.correctAns}</p>
                     </div>
                     
-                    <div className="p-4 border-l-4 border-blue-500 bg-blue-50 rounded">
-                      <h3 className="font-bold text-strawberry mb-2">Feedback:</h3>
-                      <p className="text-gray-800 whitespace-pre-wrap">{item.feedback}</p>
+                    <div className="p-4 border-l-4 border-blue-500 bg-blue-50 dark:bg-slate-800 rounded">
+                      <h3 className="font-bold text-strawberry dark:text-salmon mb-2">Feedback:</h3>
+                      <p className="text-gray-900 dark:text-gray-200 whitespace-pre-wrap">{item.feedback}</p>
                     </div>
                   </div>
                 </CollapsibleContent>

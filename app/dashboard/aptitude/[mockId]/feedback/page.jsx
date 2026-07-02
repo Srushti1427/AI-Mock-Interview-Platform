@@ -1,8 +1,5 @@
-"use client"
+"use client";
 import React, { useEffect, useState } from 'react'
-import { db } from '@/utils/db';
-import { AptitudeTest } from '@/utils/schema';
-import { eq } from 'drizzle-orm';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -17,30 +14,48 @@ function AptitudeFeedback({params}) {
     }, []);
 
     const GetFeedbackDetails = async () => {
-        const result = await db.select().from(AptitudeTest).where(eq(AptitudeTest.mockId, params.mockId));
-        if (result.length > 0) {
-            setTestData(result[0]);
-            try {
-                const parsed = JSON.parse(result[0].jsonMockResp);
-                setQuestions(parsed);
-                
-                // Get saved answers
-                const saved = localStorage.getItem(`aptitude_answers_${params.mockId}`);
-                if (saved) {
-                    const parsedAnswers = JSON.parse(saved);
-                    setUserAnswers(parsedAnswers);
-                    
-                    let currScore = 0;
-                    parsed.forEach((q, index) => {
-                        if (parsedAnswers[index] === q.CorrectAnswer) {
-                            currScore += 1;
-                        }
-                    });
-                    setScore(currScore);
-                }
-            } catch (e) {
-                console.error("Failed to parse", e);
+        try {
+            const res = await fetch(`/api/aptitude/${params.mockId}`);
+            if (!res.ok) {
+                console.error('Failed to fetch aptitude test', await res.text());
+                return;
             }
+            const result = await res.json();
+            if (result) {
+                setTestData(result);
+                try {
+                    // First try to get freshly generated questions from localStorage
+                    let questionsToUse = [];
+                    const savedQuestions = localStorage.getItem(`aptitude_questions_${params.mockId}`);
+                    
+                    if (savedQuestions) {
+                        questionsToUse = JSON.parse(savedQuestions);
+                    } else {
+                        // Fallback to stored questions if fresh ones aren't available
+                        questionsToUse = JSON.parse(result.jsonMockResp || '[]');
+                    }
+                    
+                    setQuestions(questionsToUse);
+
+                    const saved = localStorage.getItem(`aptitude_answers_${params.mockId}`);
+                    if (saved) {
+                        const parsedAnswers = JSON.parse(saved);
+                        setUserAnswers(parsedAnswers);
+
+                        let currScore = 0;
+                        questionsToUse.forEach((q, index) => {
+                            if (parsedAnswers[index] === q.CorrectAnswer) {
+                                currScore += 1;
+                            }
+                        });
+                        setScore(currScore);
+                    }
+                } catch (e) {
+                    console.error("Failed to parse", e);
+                }
+            }
+        } catch (err) {
+            console.error('Error fetching aptitude test:', err);
         }
     }
 

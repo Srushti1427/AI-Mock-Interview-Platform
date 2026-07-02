@@ -93,12 +93,12 @@
 
 @layer components {
   .glass-effect {
-    @apply bg-white/70 dark:bg-black/50 backdrop-blur-xl border border-white/20 dark:border-white/10;
+    @apply bg-white/70 dark:bg-slate-900/50 backdrop-blur-xl border border-white/20 dark:border-white/10;
   }
 
-  /* .gradient-text {
-    @apply bg-gradient-to-r from-strawberry via-salmon to-peach dark:from-strawberry dark:via-salmon dark:to-peach bg-clip-text text-transparent;
-  } */
+  .gradient-text {
+    @apply bg-gradient-to-r from-strawberry via-salmon to-peach dark:from-sky-300 dark:via-cyan-300 dark:to-blue-300 bg-clip-text text-transparent;
+  }
 
   .glow-effect {
     @apply shadow-lg shadow-strawberry/20 dark:shadow-strawberry/10;
@@ -156,5 +156,21 @@
 
   .animate-glow-pulse {
     animation: glow-pulse 3s ease-in-out infinite;
+  }
+
+  .text-black,
+  .text-gray-900,
+  .text-gray-800,
+  .text-gray-700 {
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .text-gray-600,
+  .text-gray-500,
+  .text-gray-400,
+  .text-gray-300,
+  .text-gray-200,
+  .text-gray-100 {
+    color: hsl(var(--muted-foreground)) !important;
   }
 }

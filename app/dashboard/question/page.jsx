@@ -79,7 +79,7 @@ const Questions = () => {
           {generalQuestions.map((item, index) => (
             <AccordionItem key={index} value={`item-${index}`}>
               <AccordionTrigger className="text-left font-semibold">{item.question}</AccordionTrigger>
-              <AccordionContent className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
+              <AccordionContent className="text-gray-600 dark:text-gray-200 leading-relaxed text-sm">
                 {item.answer}
               </AccordionContent>
             </AccordionItem>

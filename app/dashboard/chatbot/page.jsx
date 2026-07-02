@@ -58,7 +58,7 @@ const ChatbotPage = () => {
     <div className="max-w-4xl mx-auto p-4 md:p-6 h-[calc(100vh-100px)] flex flex-col">
       <div className="mb-6">
         <h1 className="text-3xl font-bold gradient-text pb-2">Interview Assistant</h1>
-        <p className="text-gray-600 dark:text-gray-400">Ask any preparation related queries, get tips, or seek advice.</p>
+        <p className="text-gray-600 dark:text-gray-200">Ask any preparation related queries, get tips, or seek advice.</p>
       </div>
 
       <div className="flex-1 glass-effect rounded-2xl border border-peach dark:border-strawberry-dark bg-white/50 dark:bg-slate-900/50 flex flex-col overflow-hidden shadow-lg">
@@ -87,7 +87,7 @@ const ChatbotPage = () => {
 
               {message.role === 'user' && (
                 <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
-                  <User size={18} className="text-gray-600 dark:text-gray-300" />
+                  <User size={18} className="text-gray-600 dark:text-gray-100" />
                 </div>
               )}
             </div>

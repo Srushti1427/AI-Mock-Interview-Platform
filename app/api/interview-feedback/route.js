@@ -1,7 +1,6 @@
 import { generateFeedback } from "@/utils/GeminiAIModal";
-import { db } from "@/utils/db";
+import { connectToDatabase } from "@/utils/db";
 import { UserAnswer } from "@/utils/schema";
-import { eq } from "drizzle-orm";
 
 export async function POST(req) {
   try {
@@ -14,11 +13,11 @@ export async function POST(req) {
       });
     }
 
-    // Get all user answers for this interview
+    const db = await connectToDatabase();
     const userAnswers = await db
-      .select()
-      .from(UserAnswer)
-      .where(eq(UserAnswer.mockIdRef, mockId));
+      .collection(UserAnswer)
+      .find({ mockIdRef: mockId })
+      .toArray();
 
     if (!userAnswers || userAnswers.length === 0) {
       return new Response(
@@ -27,7 +26,6 @@ export async function POST(req) {
       );
     }
 
-    // Build a comprehensive summary prompt
     const answersSummary = userAnswers
       .map(
         (answer, index) =>
@@ -54,7 +52,6 @@ Please provide in JSON format:
 
     let jsonResponse;
     try {
-      // Clean up the response
       let cleanedResp = aiResp.replace(/```json/g, "").replace(/```/g, "").trim();
       jsonResponse = JSON.parse(cleanedResp);
     } catch (e) {

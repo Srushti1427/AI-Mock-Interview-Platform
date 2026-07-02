@@ -15,10 +15,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { LoaderCircle } from "lucide-react";
 import { chatSession } from "@/utils/GeminiAIModal";
 import { v4 as uuidv4 } from "uuid";
-import { db } from "@/utils/db";
 import { useUser } from "@clerk/nextjs";
 import moment from "moment";
-import { Question } from "@/utils/schema";
 import { useRouter } from "next/navigation";
 
 const AddQuestions = () => {
@@ -32,6 +30,12 @@ const AddQuestions = () => {
   const [questionJsonResponse, setQuestionJsonResponse] = useState([]);
   const { user } = useUser();
   const router = useRouter();
+
+  const isAdmin = user?.primaryEmailAddress?.emailAddress === (process.env.NEXT_PUBLIC_ADMIN_EMAIL || "srushtishivanwar24@gmail.com");
+
+  if (!isAdmin) {
+    return null;
+  }
   const handleInputChange = (setState) => (e) => {
     setState(e.target.value);
   };
@@ -76,28 +80,32 @@ const AddQuestions = () => {
       const MockQuestionJsonResp = rawText;
 
       if (MockQuestionJsonResp) {
-        const resp = await db
-          .insert(Question)
-          .values({
-            mockId: uuidv4(),
-            MockQuestionJsonResp: MockQuestionJsonResp,
-            jobPosition: jobPosition,
-            jobDesc: jobDesc,
-            jobExperience: jobExperience,
-            typeQuestion: typeQuestion,
-            company: company,
-            createdBy: user?.primaryEmailAddress?.emailAddress,
-            createdAt: moment().format("YYYY-MM-DD"),
-          })
-          .returning({ mockId: Question.mockId });
-
-        if (resp) {
+        try {
+          const createRes = await fetch('/api/questions/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              mockId: uuidv4(),
+              MockQuestionJsonResp: MockQuestionJsonResp,
+              jobPosition,
+              jobDesc,
+              jobExperience,
+              typeQuestion,
+              company,
+              createdBy: user?.primaryEmailAddress?.emailAddress,
+              createdAt: moment().format('YYYY-MM-DD'),
+            }),
+          });
+          if (!createRes.ok) throw new Error(await createRes.text());
+          const created = await createRes.json();
           setOpenDialog(false);
-
-          router.push("/dashboard/pyq/" + resp[0]?.mockId);
+          router.push('/dashboard/pyq/' + created.mockId);
+        } catch (err) {
+          console.error('Failed to store questions:', err);
+          alert('There was an error saving the questions.');
         }
       } else {
-        console.log("ERROR");
+        console.log('ERROR');
       }
     } catch (error) {
       console.error("Failed to parse JSON:", error.message);

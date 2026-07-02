@@ -9,8 +9,7 @@ import { toast } from "sonner";
 import * as tf from "@tensorflow/tfjs";
 import * as blazeface from "@tensorflow-models/blazeface";
 // Server-side Gemini endpoints will handle AI calls and DB writes
-import { db } from "@/utils/db";
-import { UserAnswer } from "@/utils/schema";
+// Server-side Gemini endpoints will handle AI calls and DB writes
 import { useUser } from "@clerk/nextjs";
 import moment from "moment";
 import { WebCamContext } from "@/app/dashboard/layout";
@@ -301,7 +300,7 @@ const RecordAnswerSection = ({
               <Mic /> Stop Recording...
             </h2>
           ) : (
-            " Record Answer"
+            " Start to Answer"
           )}
         </Button>
         {recordingPath && (

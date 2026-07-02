@@ -42,9 +42,9 @@ export async function generateFeedback(prompt) {
         content: prompt,
       },
     ],
-    model: "llama-3.3-70b-versatile",
-    temperature: 1,
-    max_completion_tokens: 8000,
+    model: "llama-3.1-8b-instant",
+    temperature: 0.7,
+    max_completion_tokens: 2000,
     top_p: 1,
   });
 
@@ -61,8 +61,8 @@ export const startChat = () => {
 
       const chatCompletion = await groq.chat.completions.create({
         messages: history,
-        model: "llama-3.3-70b-versatile",
-        temperature: 0.9,
+        model: "llama-3.1-8b-instant",
+        temperature: 0.7,
       });
 
       const responseText = chatCompletion.choices[0]?.message?.content || "";

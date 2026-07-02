@@ -9,15 +9,26 @@ export async function POST(req) {
     if (mode === "generateInterview") {
       const { jobPosition, jobDesc, jobExperience } = body;
 
-      const InputPrompt = `You are an expert interview coach. Generate EXACTLY 1 interview question with a complete answer.
+      const difficultyGuide = Number(jobExperience) <= 1
+        ? "BEGINNER level: Ask simple, foundational questions about basic concepts, definitions, and entry-level scenarios."
+        : Number(jobExperience) <= 3
+        ? "INTERMEDIATE level: Ask moderately challenging questions involving practical application, problem-solving, and real-world scenarios."
+        : Number(jobExperience) <= 6
+        ? "ADVANCED level: Ask challenging questions about system design, optimization, leadership, and complex problem-solving."
+        : "EXPERT level: Ask highly complex questions about architecture decisions, strategic thinking, mentoring, scaling systems, and deep domain expertise.";
+
+      const InputPrompt = `You are an expert interview coach. Generate EXACTLY 1 interview question with a complete ideal answer to start the interview.
 
 Job Position: ${jobPosition}
 Job Description: ${jobDesc}
 Years of Experience: ${jobExperience}
 
+DIFFICULTY: ${difficultyGuide}
+The question difficulty MUST match the candidate's ${jobExperience} years of experience. Do NOT ask senior-level questions to a fresher, and do NOT ask basic questions to an experienced candidate.
+
 REQUIREMENTS:
 - Generate EXACTLY 1 question
-- Response MUST be ONLY a valid JSON array
+- Response MUST be ONLY a valid JSON array containing exactly 1 object
 - No extra text
 
 [
