@@ -21,10 +21,22 @@ export const metadata = {
   },
 };
 
+const clerkLocalization = {
+  signIn: {
+    start: {
+      title: "Sign in to InterviewAI",
+    },
+  },
+  signUp: {
+    start: {
+      title: "Create your InterviewAI account",
+    },
+  },
+};
+
 export default function RootLayout({ children }) {
   return (
-    
-    <ClerkProvider >
+    <ClerkProvider localization={clerkLocalization}>
       <html lang="en">
         <body className={`${poppins.className} bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950`}>
           <Toaster />

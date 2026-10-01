@@ -146,19 +146,19 @@ Format:
       </div>
 
       <Dialog open={openDailog} onOpenChange={setOpenDialog}>
-        <DialogContent className="max-w-[95vw] sm:max-w-2xl glass-effect border-peach dark:border-strawberry-dark mx-2 sm:mx-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-2xl rounded-2xl p-6 sm:p-8 mx-2 sm:mx-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl sm:text-3xl gradient-text font-bold">
+            <DialogTitle className="text-2xl sm:text-3xl bg-gradient-to-r from-strawberry via-salmon to-peach dark:from-sky-300 dark:via-cyan-300 dark:to-blue-300 bg-clip-text text-transparent font-bold">
               Create Your Interview
             </DialogTitle>
-            <DialogDescription className="text-sm sm:text-base text-gray-600 dark:text-gray-200 mt-2">
+            <DialogDescription className="text-sm sm:text-base text-gray-600 dark:text-slate-300 mt-2">
               Tell us about the position you're preparing for. We'll generate custom interview questions powered by AI.
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={onSubmit} className="space-y-4 sm:space-y-5 mt-4 sm:mt-6">
             <div>
-              <label className="block text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2">
+              <label className="block text-sm sm:text-base font-semibold text-gray-800 dark:text-slate-200 mb-1.5 sm:mb-2">
                 Job Role / Position
               </label>
               <Input
@@ -166,12 +166,12 @@ Format:
                 required
                 value={jobPosition}
                 onChange={(e) => setJobPosition(e.target.value)}
-                className="rounded-xl border-peach focus:border-blue-900 focus:ring-blue-900 text-base py-2.5 sm:py-3"
+                className="bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-500 dark:placeholder:text-slate-400 rounded-xl border border-gray-300 dark:border-slate-700 text-base py-2.5 sm:py-3 focus:ring-2 focus:ring-strawberry dark:focus:ring-salmon"
               />
             </div>
 
             <div>
-              <label className="block text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2">
+              <label className="block text-sm sm:text-base font-semibold text-gray-800 dark:text-slate-200 mb-1.5 sm:mb-2">
                 Job Description / Tech Stack
               </label>
               <Textarea
@@ -179,12 +179,12 @@ Format:
                 required
                 value={jobDesc}
                 onChange={(e) => setJobDesc(e.target.value)}
-                className="rounded-xl border-peach focus:border-blue-900 focus:ring-blue-900 min-h-20 sm:min-h-24 text-base"
+                className="bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-500 dark:placeholder:text-slate-400 rounded-xl border border-gray-300 dark:border-slate-700 min-h-20 sm:min-h-24 text-base focus:ring-2 focus:ring-strawberry dark:focus:ring-salmon"
               />
             </div>
 
             <div>
-              <label className="block text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-100 mb-1.5 sm:mb-2">
+              <label className="block text-sm sm:text-base font-semibold text-gray-800 dark:text-slate-200 mb-1.5 sm:mb-2">
                 Years of Experience
               </label>
               <Input
@@ -194,7 +194,7 @@ Format:
                 required
                 value={jobExperience}
                 onChange={(e) => setJobExperience(e.target.value)}
-                className="rounded-xl border-peach focus:border-blue-900 focus:ring-blue-900 text-base py-2.5 sm:py-3"
+                className="bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-500 dark:placeholder:text-slate-400 rounded-xl border border-gray-300 dark:border-slate-700 text-base py-2.5 sm:py-3 focus:ring-2 focus:ring-strawberry dark:focus:ring-salmon"
               />
             </div>
 

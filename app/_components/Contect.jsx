@@ -18,19 +18,19 @@ const Contect = () => {
 
     console.log(name, email, message);
 
-      if (name && email && message) {
+    if (name && email && message) {
       setLoading(true);
       try {
-          const res = await fetch('/api/newsletter/create', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ newName: name, newEmail: email, newMessage: message, createdAt: moment().format('YYYY-MM-DD') }),
-          });
-          if (!res.ok) throw new Error(await res.text());
-          toast('User Response recorded successfully');
-          setName('');
-          setEmail('');
-          setMessage('');
+        const res = await fetch('/api/newsletter/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ newName: name, newEmail: email, newMessage: message, createdAt: moment().format('YYYY-MM-DD') }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        toast('User Response recorded successfully');
+        setName('');
+        setEmail('');
+        setMessage('');
       } catch (error) {
         console.error(error);
         toast("Error recording response");
@@ -42,41 +42,65 @@ const Contect = () => {
     }
   };
   return (
-    <div className="container mx-auto text-center px-4 sm:px-6">
-      <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-800 dark:text-white">Get In Touch</h2>
-      <p className="mt-3 sm:mt-4 text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-        Have any questions? Reach out to us and we'll get back to you as soon as
-        possible.
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+      <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+        Support & Feedback
+      </div>
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">
+        Get In Touch
+      </h2>
+      <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
+        Have questions, feedback, or need assistance with InterviewAI? Send us a message and our team will respond promptly.
       </p>
-      <div className="mt-6 sm:mt-8">
-        <form onSubmit={onSubmit} className="max-w-xl mx-auto space-y-3 sm:space-y-4">
-          <input
-            type="text"
-            placeholder="Your Name"
-            value={name}
-            onChange={handleInputChange(setName)}
-            className="w-full px-4 py-3 sm:py-4 text-base sm:text-lg border border-gray-300 dark:border-gray-600 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-salmon focus:ring-2 focus:ring-salmon/30 smooth-transition"
-          />
-          <input
-            type="email"
-            placeholder="Your Email"
-            value={email}
-            onChange={handleInputChange(setEmail)}
-            className="w-full px-4 py-3 sm:py-4 text-base sm:text-lg border border-gray-300 dark:border-gray-600 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-salmon focus:ring-2 focus:ring-salmon/30 smooth-transition"
-          />
-          <textarea
-            placeholder="Your Message"
-            value={message}
-            onChange={handleInputChange(setMessage)}
-            className="w-full px-4 py-3 sm:py-4 text-base sm:text-lg border border-gray-300 dark:border-gray-600 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-salmon focus:ring-2 focus:ring-salmon/30 smooth-transition"
-            rows="4"
-          />
+
+      <div className="mt-8 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm text-left max-w-xl mx-auto">
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+              Full Name
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. Alex Sharma"
+              value={name}
+              onChange={handleInputChange(setName)}
+              className="w-full px-3.5 py-2.5 text-sm border border-gray-300 dark:border-slate-700 rounded-lg sm:rounded-xl bg-slate-50 dark:bg-slate-800/60 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-600 transition-colors"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+              Email Address
+            </label>
+            <input
+              type="email"
+              placeholder="e.g. alex@example.com"
+              value={email}
+              onChange={handleInputChange(setEmail)}
+              className="w-full px-3.5 py-2.5 text-sm border border-gray-300 dark:border-slate-700 rounded-lg sm:rounded-xl bg-slate-50 dark:bg-slate-800/60 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-600 transition-colors"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+              Message
+            </label>
+            <textarea
+              placeholder="How can we help you?"
+              value={message}
+              onChange={handleInputChange(setMessage)}
+              className="w-full px-3.5 py-2.5 text-sm border border-gray-300 dark:border-slate-700 rounded-lg sm:rounded-xl bg-slate-50 dark:bg-slate-800/60 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-600 transition-colors resize-none"
+              rows={4}
+            />
+          </div>
+
           <button
             type="submit"
-            className="w-full sm:w-auto px-8 sm:px-10 py-3 sm:py-4 text-base sm:text-lg font-semibold bg-gradient-to-r from-strawberry to-salmon hover:from-strawberry-dark hover:to-salmon-dark text-white rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl smooth-transition transform hover:scale-105"
+            disabled={loading}
+            className="w-full py-3 px-6 text-sm font-semibold text-white rounded-lg sm:rounded-xl bg-[linear-gradient(90deg,#05080B_0%,#365F87_100%)] hover:opacity-95 transition-opacity shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
             {loading ? (
-              <LoaderCircle className="animate-spin mx-auto" />
+              <LoaderCircle className="animate-spin w-4 h-4" />
             ) : (
               "Send Message"
             )}

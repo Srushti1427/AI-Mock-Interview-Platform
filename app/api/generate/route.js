@@ -24,7 +24,11 @@ Job Description: ${jobDesc}
 Years of Experience: ${jobExperience}
 
 DIFFICULTY: ${difficultyGuide}
-The question difficulty MUST match the candidate's ${jobExperience} years of experience. Do NOT ask senior-level questions to a fresher, and do NOT ask basic questions to an experienced candidate.
+The question difficulty MUST match the candidate's ${jobExperience} years of experience.
+
+CRITICAL ACCURACY REQUIREMENT:
+- Double-check all math, logic, technical concepts, and calculations for 100% precision.
+- The ideal answer MUST be factually and logically accurate.
 
 REQUIREMENTS:
 - Generate EXACTLY 1 question

@@ -4,3 +4,4 @@ export const UserAnswer = 'userAnswer';
 export const Newsletter = 'newsletter';
 export const AptitudeTest = 'aptitudeTest';
 export const UserActivity = 'userActivity';
+export const ChatHistory = 'chatHistory';

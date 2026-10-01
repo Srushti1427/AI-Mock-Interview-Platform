@@ -6,9 +6,6 @@ import React, { useContext, useEffect, useState, useRef } from "react";
 import Webcam from "react-webcam";
 import { Mic, Play, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import * as tf from "@tensorflow/tfjs";
-import * as blazeface from "@tensorflow-models/blazeface";
-// Server-side Gemini endpoints will handle AI calls and DB writes
 // Server-side Gemini endpoints will handle AI calls and DB writes
 import { useUser } from "@clerk/nextjs";
 import moment from "moment";
@@ -55,18 +52,27 @@ const RecordAnswerSection = ({
   const faceDetectionIntervalRef = useRef(null);
 
   useEffect(() => {
+    let isMounted = true;
     const loadFaceModel = async () => {
+      if (!webCamEnabled || faceModel) return;
       try {
+        const [tf, blazeface] = await Promise.all([
+          import("@tensorflow/tfjs"),
+          import("@tensorflow-models/blazeface")
+        ]);
         await tf.ready();
         const model = await blazeface.load();
-        setFaceModel(model);
-        console.log("Blazeface model loaded");
+        if (isMounted) {
+          setFaceModel(model);
+          console.log("Blazeface model loaded on demand");
+        }
       } catch (error) {
         console.error("Error loading face detection model:", error);
       }
     };
     loadFaceModel();
-  }, []);
+    return () => { isMounted = false; };
+  }, [webCamEnabled, faceModel]);
 
   useEffect(() => {
     if (webCamEnabled && faceModel) {

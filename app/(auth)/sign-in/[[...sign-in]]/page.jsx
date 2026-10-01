@@ -47,7 +47,7 @@ export default async function Page() {
                     />
                   </svg>
                 </div>
-                <span className="text-2xl font-bold">AI MOCK INTERVIEW</span>
+                <span className="text-2xl font-bold">InterviewAI</span>
               </div>
             </a>
 
@@ -144,7 +144,7 @@ export default async function Page() {
               </a>
 
               <h1 className="mt-4 text-2xl font-bold text-gray-900 sm:text-3xl md:text-4xl dark:text-white">
-                Welcome to AI MOCK INTERVIEW
+                Welcome to InterviewAI
               </h1>
 
               <p className="mt-4 text-gray-600 dark:text-gray-200 max-w-sm mx-auto">
@@ -164,7 +164,7 @@ export default async function Page() {
               {/* Additional Info */}
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-500 dark:text-gray-200">
-                  New to AI MOCK INTERVIEW?{" "}
+                  New to InterviewAI?{" "}
                   <a
                     href="/sign-up"
                     className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
